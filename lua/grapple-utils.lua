@@ -1,9 +1,10 @@
 local M = {}
 
+local grapple = require("grapple")
+
 function M.setup() end
 
 function M.move_to_end()
-	local grapple = require("grapple")
 	local current_path = vim.api.nvim_buf_get_name(0)
 	local opts = { path = current_path }
 	if grapple.exists(opts) then
@@ -12,8 +13,24 @@ function M.move_to_end()
 	end
 end
 
-function M.move_up()
-	local grapple = require("grapple")
+local function get_current_index(tags, current_path)
+	for i, tag in ipairs(tags) do
+		if tag.path == current_path then
+			return i
+		end
+	end
+	return nil
+end
+
+local function swap_tags(tags, index1, index2)
+	tags[index1], tags[index2] = tags[index2], tags[index1]
+	for i = 1, #tags do
+		grapple.untag({ path = tags[i].path })
+		grapple.tag({ path = tags[i].path })
+	end
+end
+
+local function move_tag(direction)
 	local current_path = vim.api.nvim_buf_get_name(0)
 	local current_opts = { path = current_path }
 	local tags, err = grapple.tags()
@@ -24,62 +41,31 @@ function M.move_up()
 	end
 
 	if grapple.exists(current_opts) then
-		local current_index = nil
-		for i, tag in ipairs(tags) do
-			if tag.path == current_path then
-				current_index = i
-				break
+		local current_index = get_current_index(tags, current_path)
+
+		if current_index then
+			local new_index = current_index + direction
+
+			if new_index > 0 and new_index <= #tags then
+				swap_tags(tags, current_index, new_index)
+				grapple.select(current_opts)
+			else
+				vim.notify("Cannot move: Current tag is at the boundary of the list", vim.log.levels.INFO)
 			end
-		end
-		if current_index and current_index > 1 then
-			local prev_index = current_index - 1
-			tags[current_index], tags[prev_index] = tags[prev_index], tags[current_index]
-			for i = 1, #tags do
-				grapple.untag({ path = tags[i].path })
-				grapple.tag({ path = tags[i].path })
-			end
-			grapple.select(current_opts)
 		else
-			vim.notify("Cannot move up: Current tag is the first in the list or not found", vim.log.levels.INFO)
+			vim.notify("Tag not found for the current buffer", vim.log.levels.INFO)
 		end
 	else
 		vim.notify("Current buffer is not tagged", vim.log.levels.INFO)
 	end
 end
 
+function M.move_up()
+	move_tag(-1)
+end
+
 function M.move_down()
-	local grapple = require("grapple")
-	local current_path = vim.api.nvim_buf_get_name(0)
-	local current_opts = { path = current_path }
-	local tags, err = grapple.tags()
-
-	if not tags then
-		vim.notify("No tags available: " .. err, vim.log.levels.WARN)
-		return
-	end
-
-	if grapple.exists(current_opts) then
-		local current_index = nil
-		for i, tag in ipairs(tags) do
-			if tag.path == current_path then
-				current_index = i
-				break
-			end
-		end
-		if current_index and current_index < #tags then
-			local next_index = current_index + 1
-			tags[current_index], tags[next_index] = tags[next_index], tags[current_index]
-			for i = 1, #tags do
-				grapple.untag({ path = tags[i].path })
-				grapple.tag({ path = tags[i].path })
-			end
-			grapple.select(current_opts)
-		else
-			vim.notify("Cannot move down: Current tag is the last in the list or not found", vim.log.levels.INFO)
-		end
-	else
-		vim.notify("Current buffer is not tagged", vim.log.levels.INFO)
-	end
+	move_tag(1)
 end
 
 return M
