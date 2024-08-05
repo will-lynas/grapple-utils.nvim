@@ -17,6 +17,11 @@ local function get_current_index(tags, current_path)
 end
 
 function M.move_to_index(opts)
+	if not opts or not opts.index then
+		vim.notify("Invalid options: index is required", vim.log.levels.ERROR)
+		return
+	end
+
 	local current_path = vim.api.nvim_buf_get_name(0)
 	local current_opts = { path = current_path }
 	if not grapple.exists(current_opts) then
@@ -33,11 +38,6 @@ function M.move_to_index(opts)
 	local current_index = get_current_index(tags, current_path)
 	if not current_index then
 		vim.notify("Tag not found for the current buffer", vim.log.levels.ERROR)
-		return
-	end
-
-	if not opts or not opts.index then
-		vim.notify("Invalid options: index is required", vim.log.levels.ERROR)
 		return
 	end
 
