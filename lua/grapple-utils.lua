@@ -42,8 +42,8 @@ function M.move_to_index(opts)
 	end
 
 	local new_index = opts.index
-	if new_index == -1 then
-		new_index = #tags
+	if new_index < 0 then
+		new_index = (#tags + 1) + new_index
 	end
 
 	if new_index < 1 or new_index > #tags then
