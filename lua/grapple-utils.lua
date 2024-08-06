@@ -13,6 +13,9 @@ function M.move_to_end()
 	end
 end
 
+---@param tags grapple.tag[]
+---@param current_path string
+---@return integer?
 local function get_current_index(tags, current_path)
 	for i, tag in ipairs(tags) do
 		if tag.path == current_path then
@@ -22,6 +25,7 @@ local function get_current_index(tags, current_path)
 	return nil
 end
 
+---@param direction integer
 local function move_tag(direction)
 	local current_path = vim.api.nvim_buf_get_name(0)
 	local current_opts = { path = current_path }
