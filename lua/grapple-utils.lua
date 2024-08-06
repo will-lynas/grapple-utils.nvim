@@ -16,6 +16,7 @@ local function get_current_index(tags, current_path)
 	return nil
 end
 
+---@param opts table
 function M.move_to_index(opts)
 	if not opts or not opts.index then
 		vim.notify("Invalid options: index is required", vim.log.levels.ERROR)
@@ -30,10 +31,7 @@ function M.move_to_index(opts)
 	end
 
 	local tags, err = grapple.tags()
-	if not tags then
-		vim.notify("No tags available: " .. err, vim.log.levels.ERROR)
-		return
-	end
+	assert(tags, "No tags available: " .. (err or "unknown error"))
 
 	local current_index = get_current_index(tags, current_path)
 	if not current_index then
