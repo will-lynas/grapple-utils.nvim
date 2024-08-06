@@ -4,15 +4,6 @@ local grapple = require("grapple")
 
 function M.setup() end
 
-function M.move_to_end()
-	local current_path = vim.api.nvim_buf_get_name(0)
-	local opts = { path = current_path }
-	if grapple.exists(opts) then
-		grapple.untag(opts)
-		grapple.tag(opts)
-	end
-end
-
 ---@param tags grapple.tag[]
 ---@param current_path string
 ---@return integer?
@@ -23,6 +14,56 @@ local function get_current_index(tags, current_path)
 		end
 	end
 	return nil
+end
+
+---@param opts grapple.options
+function M.move_to_index(opts)
+	if not opts or not opts.index then
+		vim.notify("Invalid options: index is required", vim.log.levels.ERROR)
+		return
+	end
+
+	local current_path = vim.api.nvim_buf_get_name(0)
+	local current_opts = { path = current_path }
+	if not grapple.exists(current_opts) then
+		vim.notify("Current buffer is not tagged", vim.log.levels.INFO)
+		return
+	end
+
+	local tags, err = grapple.tags()
+	assert(tags, "No tags available: " .. (err or "unknown error"))
+
+	local current_index = get_current_index(tags, current_path)
+	if not current_index then
+		vim.notify("Tag not found for the current buffer", vim.log.levels.ERROR)
+		return
+	end
+
+	local new_index = opts.index
+	if new_index < 0 then
+		new_index = (#tags + 1) + new_index
+	end
+
+	if new_index < 1 or new_index > #tags then
+		vim.notify("Invalid index: Out of bounds", vim.log.levels.ERROR)
+		return
+	end
+
+	if current_index == new_index then
+		vim.notify("Tag is already at the specified position", vim.log.levels.INFO)
+		return
+	end
+
+	grapple.tag({ path = current_path, index = new_index })
+	grapple.select(current_opts)
+end
+
+function M.move_to_start()
+	M.move_to_index({ index = 1 })
+end
+
+function M.move_to_end()
+	M.move_to_index({ index = -1 })
 end
 
 ---@param direction integer
