@@ -108,6 +108,7 @@ end
 ---@class grapple-utils.options: grapple.options
 ---@field return_to_previous boolean?
 
+---Wrapper around grapple.select allowing additional arguments
 ---@param opts grapple-utils.options
 ---@return string? error
 function M.select(opts)
