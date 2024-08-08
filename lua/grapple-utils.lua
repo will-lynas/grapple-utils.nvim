@@ -105,4 +105,13 @@ function M.move_down()
 	move_tag(1)
 end
 
+---@class grapple-utils.options: grapple.options
+---@field back_and_forth boolean?
+
+---@param opts grapple-utils.options
+---@return string? error
+function M.select(opts)
+	return grapple.select(opts)
+end
+
 return M
