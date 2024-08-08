@@ -106,7 +106,7 @@ function M.move_down()
 end
 
 ---@class grapple-utils.options: grapple.options
----@field back_and_forth boolean?
+---@field return_to_previous boolean?
 
 ---@param opts grapple-utils.options
 ---@return string? error
